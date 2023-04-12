@@ -1,3 +1,4 @@
+#include "stdio.h"
 #include "stdlib.h"
 #include "math.h"
 #include "matrix.h"
@@ -140,3 +141,20 @@ f4matrix f4matrix_translate(f4matrix mat, float x, float y, float z) {
     return f4matrix_multiply(mat, f);
 }
 
+char* f4matrix_toString(f4matrix mat) {
+    char* matrixPresent = malloc(512);
+    sprintf(
+        matrixPresent,
+
+        "%5.2f %5.2f %5.2f %5.2f\n"
+        "%5.2f %5.2f %5.2f %5.2f\n"
+        "%5.2f %5.2f %5.2f %5.2f\n"
+        "%5.2f %5.2f %5.2f %5.2f",
+
+        mat[0], mat[1], mat[2], mat[3],
+        mat[4], mat[5], mat[6], mat[7],
+        mat[8], mat[9], mat[10],mat[11],
+        mat[12], mat[13], mat[14], mat[15]
+    );
+    return matrixPresent;
+}

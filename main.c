@@ -1,9 +1,7 @@
 #include "SDL.h"
 #include "SDL_ttf.h"
-// #include "SDL2/SDL_opengl.h"
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl3.h>
-// #include <OpenGL/glext.h>
 #include "stdlib.h"
 
 #include "cube.h"
@@ -22,10 +20,13 @@ int main (int argc, char** argv)
 		return -1;
 	}
 
-
-
-    f4matrix projection = f4matrix_perspectiveProjection(1024.0, 768.0, 55.0, 0.1, 100.0);
-    f4matrix camera = f4matrix_camera();
+    TTF_Font* font;
+    font = TTF_OpenFont("inconsolata.otf", 24);
+    SDL_Surface* text;
+    int textSize;
+    char* matrixPresent;
+    GLubyte *pixies;
+    SDL_Color color = { 55, 55, 55 };
 
     // Open Window
     SDL_Window* window = SDL_CreateWindow("Eremeev: Matrix - 3D scene", 0, 0, 1024, 768, SDL_WINDOW_OPENGL);
@@ -33,40 +34,11 @@ int main (int argc, char** argv)
         return -1;
     }
 
-
-    TTF_Font* font;
-    font = TTF_OpenFont("inconsolata.otf", 24);
-    SDL_Surface* text;
-    // Set color to black
-    SDL_Color color = { 55, 55, 55 };
-    char* matrixPresent = malloc(512);
-    sprintf(
-        matrixPresent,
-        "%5.2f %5.2f %5.2f %5.2f\n"
-        "%5.2f %5.2f %5.2f %5.2f\n"
-        "%5.2f %5.2f %5.2f %5.2f\n"
-        "%5.2f %5.2f %5.2f %5.2f",
-        projection[0],
-        projection[1],
-        projection[2],
-        projection[3],
-        projection[4],
-        projection[5],
-        projection[6],
-        projection[7],
-        projection[8],
-        projection[9],
-        projection[10],
-        projection[11],
-        projection[12],
-        projection[13],
-        projection[14],
-        projection[15]
-    );
-    text = TTF_RenderText_Blended_Wrapped( font, matrixPresent, color, 380 );
-    int textSize = text->h * text->pitch * text->format->BytesPerPixel;
-    GLubyte *pixies = (GLubyte *)(text->pixels);
-
+    f4matrix projection = f4matrix_perspectiveProjection(1024.0, 768.0, 55.0, 0.1, 100.0);
+    f4matrix camera = f4matrix_camera();
+    Cube* cube = newCube();
+    MeshPlane* plane = newMeshPlane();
+    TextBlock* textBlock = newTextBlock();
 
     // OpenGL attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -92,8 +64,7 @@ int main (int argc, char** argv)
     ShaderProgram planeShaderProgram = buildShaderProgram(planeVertexShader, planeFragmentShader);
     ShaderProgram textBlockShaderProgram = buildShaderProgram(textBlockVertexShader, textBlockFragmentShader);
 
-    Cube* cube = newCube();
-
+    // Cube draw init
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -117,10 +88,7 @@ int main (int argc, char** argv)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube->i_size, cube->indices, GL_STATIC_DRAW);
 
-
-
-    MeshPlane* plane = newMeshPlane();
-
+    // Mesh plane draw init
     unsigned int planeVAO;
     glGenVertexArrays(1, &planeVAO);
     glBindVertexArray(planeVAO);
@@ -137,9 +105,7 @@ int main (int argc, char** argv)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planeEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, plane->i_size, plane->indices, GL_STATIC_DRAW);
 
-
-    TextBlock* textBlock = newTextBlock();
-
+    // Text block21 draw init
     unsigned int tbVAO;
     glGenVertexArrays(1, &tbVAO);
     glBindVertexArray(tbVAO);
@@ -167,6 +133,10 @@ int main (int argc, char** argv)
     glGenTextures(1, &textTexture);
     glBindTexture(GL_TEXTURE_2D, textTexture);
 
+    matrixPresent = f4matrix_toString(cube->model);
+    text = TTF_RenderText_Blended_Wrapped( font, matrixPresent, color, 380 );
+    textSize = text->h * text->pitch * text->format->BytesPerPixel;
+    pixies = (GLubyte *)(text->pixels);
     unsigned int textPBO;
     glGenBuffers(1, &textPBO);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, textPBO);
@@ -175,7 +145,8 @@ int main (int argc, char** argv)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text->w, text->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
+    free(matrixPresent);
+    SDL_FreeSurface(text);
 
 
     glEnable(GL_DEPTH_TEST);
@@ -211,6 +182,29 @@ int main (int argc, char** argv)
         cube->angle_y += 0.005;
         cube->angle_z += 0.005;
 
+        if (time % 100 == 0) {
+            matrixPresent = f4matrix_toString(cube->model);
+            text = TTF_RenderText_Blended_Wrapped( font, matrixPresent, color, 380 );
+            textSize = text->h * text->pitch * text->format->BytesPerPixel;
+            pixies = (GLubyte *)(text->pixels);
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, textPBO);
+            glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, textSize, pixies);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text->w, text->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            free(matrixPresent);
+            SDL_FreeSurface(text);
+            // cube->pos_x += 0.001;
+            // cube->pos_y += 0.0005;
+            // cube->scale_x += 0.0004;
+            // cube->scale_y += 0.0001;
+            // cube->scale_z += 0.0001;
+        } else {
+            // cube->pos_x -= 0.001;
+            // cube->pos_y -= 0.0005;
+            // cube->scale_x -= 0.0004;
+            // cube->scale_y -= 0.0001;
+            // cube->scale_z -= 0.0001;
+        }
+
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // OpenGL rendering goes here
@@ -236,52 +230,6 @@ int main (int argc, char** argv)
         uniformSampler2D(textBlockShaderProgram, "texture1", 0);
         glDrawElements(GL_TRIANGLES, textBlock->i_count, GL_UNSIGNED_INT, 0);
 
-         if (time % 100 == 0) {
-            matrixPresent = malloc(512);
-
-            sprintf(
-                matrixPresent,
-                "%5.2f %5.2f %5.2f %5.2f\n"
-                "%5.2f %5.2f %5.2f %5.2f\n"
-                "%5.2f %5.2f %5.2f %5.2f\n"
-                "%5.2f %5.2f %5.2f %5.2f",
-                cube->model[0],
-                cube->model[1],
-                cube->model[2],
-                cube->model[3],
-                cube->model[4],
-                cube->model[5],
-                cube->model[6],
-                cube->model[7],
-                cube->model[8],
-                cube->model[9],
-                cube->model[10],
-                cube->model[11],
-                cube->model[12],
-                cube->model[13],
-                cube->model[14],
-                cube->model[15]
-            );
-            text = TTF_RenderText_Blended_Wrapped( font, matrixPresent, color, 380 );
-            textSize = text->h * text->pitch * text->format->BytesPerPixel;
-            pixies = (GLubyte *)(text->pixels);
-            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, textPBO);
-            glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, textSize, pixies);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text->w, text->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            free(matrixPresent);
-            SDL_FreeSurface(text);
-            // cube->pos_x += 0.001;
-            // cube->pos_y += 0.0005;
-            // cube->scale_x += 0.0004;
-            // cube->scale_y += 0.0001;
-            // cube->scale_z += 0.0001;
-        } else {
-            // cube->pos_x -= 0.001;
-            // cube->pos_y -= 0.0005;
-            // cube->scale_x -= 0.0004;
-            // cube->scale_y -= 0.0001;
-            // cube->scale_z -= 0.0001;
-        }
 
         SDL_GL_SwapWindow(window);
     }
