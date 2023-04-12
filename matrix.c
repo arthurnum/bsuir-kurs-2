@@ -142,7 +142,7 @@ f4matrix f4matrix_translate(f4matrix mat, float x, float y, float z) {
 }
 
 char* f4matrix_toString(f4matrix mat) {
-    char* matrixPresent = malloc(512);
+    char* matrixPresent = malloc(128);
     sprintf(
         matrixPresent,
 
