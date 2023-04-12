@@ -11,6 +11,160 @@
 #include "shaders.h"
 #include "text_block.h"
 
+void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
+    switch (key) {
+        case SDLK_RIGHT:
+            switch (state.mode) {
+                case MODE_ROTATE:
+                    switch (state.rotateMode % 3) {
+                        case ROTATE_MODE_X:
+                            cube->angle_z -= 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        case ROTATE_MODE_Y:
+                            cube->angle_z -= 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        case ROTATE_MODE_Z:
+                            cube->angle_y += 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case MODE_TRANSLATE:
+                    cube->pos_x += 0.01;
+                    updateCubeModel(cube);
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        case SDLK_LEFT:
+            switch (state.mode) {
+                case MODE_ROTATE:
+                    switch (state.rotateMode % 3) {
+                        case ROTATE_MODE_X:
+                            cube->angle_z += 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        case ROTATE_MODE_Y:
+                            cube->angle_z += 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        case ROTATE_MODE_Z:
+                            cube->angle_y -= 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case MODE_TRANSLATE:
+                    cube->pos_x -= 0.01;
+                    updateCubeModel(cube);
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        case SDLK_UP:
+            switch (state.mode) {
+                case MODE_ROTATE:
+                    switch (state.rotateMode % 3) {
+                        case ROTATE_MODE_X:
+                            cube->angle_y += 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        case ROTATE_MODE_Y:
+                            cube->angle_x += 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        case ROTATE_MODE_Z:
+                            cube->angle_x += 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case MODE_SCALE:
+                    cube->scale_x += 0.01;
+                    cube->scale_y += 0.01;
+                    cube->scale_z += 0.01;
+                    updateCubeModel(cube);
+                    break;
+                case MODE_TRANSLATE:
+                    switch (state.translateMode % 2) {
+                        case TRANSLATE_MODE_Y:
+                            cube->pos_y += 0.01;
+                            updateCubeModel(cube);
+                            break;
+                        case TRANSLATE_MODE_Z:
+                            cube->pos_z += 0.01;
+                            updateCubeModel(cube);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        case SDLK_DOWN:
+            switch (state.mode) {
+                case MODE_ROTATE:
+                    switch (state.rotateMode % 3) {
+                        case ROTATE_MODE_X:
+                            cube->angle_y -= 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        case ROTATE_MODE_Y:
+                            cube->angle_x -= 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        case ROTATE_MODE_Z:
+                            cube->angle_x -= 0.5;
+                            updateCubeModel(cube);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case MODE_SCALE:
+                    cube->scale_x -= 0.01;
+                    cube->scale_y -= 0.01;
+                    cube->scale_z -= 0.01;
+                    updateCubeModel(cube);
+                    break;
+                case MODE_TRANSLATE:
+                    switch (state.translateMode % 2) {
+                        case TRANSLATE_MODE_Y:
+                            cube->pos_y -= 0.01;
+                            updateCubeModel(cube);
+                            break;
+                        case TRANSLATE_MODE_Z:
+                            cube->pos_z -= 0.01;
+                            updateCubeModel(cube);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
 int main (int argc, char** argv)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -178,143 +332,12 @@ int main (int argc, char** argv)
                         state.mode = MODE_TRANSLATE;
                         state.translateMode++;
                         break;
-
                     case SDLK_RIGHT:
-                        switch (state.mode) {
-                            case MODE_ROTATE:
-                                switch (state.rotateMode % 3) {
-                                    case ROTATE_MODE_X:
-                                        cube->angle_z -= 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    case ROTATE_MODE_Y:
-                                        cube->angle_z -= 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    case ROTATE_MODE_Z:
-                                        cube->angle_y += 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                break;
-                            case MODE_TRANSLATE:
-                                cube->pos_x += 0.01;
-                                updateCubeModel(cube);
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-
                     case SDLK_LEFT:
-                        switch (state.mode) {
-                            case MODE_ROTATE:
-                                switch (state.rotateMode % 3) {
-                                    case ROTATE_MODE_X:
-                                        cube->angle_z += 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    case ROTATE_MODE_Y:
-                                        cube->angle_z += 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    case ROTATE_MODE_Z:
-                                        cube->angle_y -= 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                break;
-                            case MODE_TRANSLATE:
-                                cube->pos_x -= 0.01;
-                                updateCubeModel(cube);
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-
                     case SDLK_UP:
-                        switch (state.mode) {
-                            case MODE_ROTATE:
-                                switch (state.rotateMode % 3) {
-                                    case ROTATE_MODE_X:
-                                        cube->angle_y += 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    case ROTATE_MODE_Y:
-                                        cube->angle_x += 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    case ROTATE_MODE_Z:
-                                        cube->angle_x += 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                break;
-                            case MODE_SCALE:
-                                cube->scale_x += 0.01;
-                                cube->scale_y += 0.01;
-                                cube->scale_z += 0.01;
-                                updateCubeModel(cube);
-                                break;
-                            case MODE_TRANSLATE:
-                                switch (state.translateMode % 2) {
-                                    case TRANSLATE_MODE_Y:
-                                        cube->pos_y += 0.01;
-                                        updateCubeModel(cube);
-                                    case TRANSLATE_MODE_Z:
-                                        cube->pos_z += 0.01;
-                                        updateCubeModel(cube);
-                                    default:
-                                        break;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-
                     case SDLK_DOWN:
-                        switch (state.mode) {
-                            case MODE_ROTATE:
-                                switch (state.rotateMode % 3) {
-                                    case ROTATE_MODE_X:
-                                        cube->angle_y -= 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    case ROTATE_MODE_Y:
-                                        cube->angle_x -= 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    case ROTATE_MODE_Z:
-                                        cube->angle_x -= 0.5;
-                                        updateCubeModel(cube);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                break;
-                            case MODE_SCALE:
-                                cube->scale_x -= 0.01;
-                                cube->scale_y -= 0.01;
-                                cube->scale_z -= 0.01;
-                                updateCubeModel(cube);
-                                break;
-                            case MODE_TRANSLATE:
-                                cube->pos_y -= 0.01;
-                                updateCubeModel(cube);
-                                break;
-                            default:
-                                break;
-                        }
+                        processStateAgainstCube(state, event.key.keysym.sym, cube);
                         break;
-
                     case SDLK_i:
                         resetCubeModel(cube);
                         break;
