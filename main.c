@@ -258,6 +258,15 @@ void processStateAgainstCamera(ControlState state, SDL_Keycode key, Camera* came
     updateCameraView(camera);
 }
 
+void updateMatrixSamplerBuffer(unsigned int buffer, unsigned int texture, SDL_Surface* text) {
+    int textSize = text->h * text->pitch * text->format->BytesPerPixel;
+    GLubyte* pixies = (GLubyte *)(text->pixels);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
+    glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, textSize, pixies);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text->w, text->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+}
+
 int main (int argc, char** argv)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -499,23 +508,13 @@ int main (int argc, char** argv)
         if (time % 501 == 0) {
             matrixPresent = f4matrix_toString(cube->model);
             text = TTF_RenderText_Blended_Wrapped( font, matrixPresent, color, 380 );
-            textSize = text->h * text->pitch * text->format->BytesPerPixel;
-            pixies = (GLubyte *)(text->pixels);
-            glBindTexture(GL_TEXTURE_2D, textTexture);
-            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, textPBO);
-            glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, textSize, pixies);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text->w, text->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            updateMatrixSamplerBuffer(textPBO, textTexture, text);
             free(matrixPresent);
             SDL_FreeSurface(text);
 
             matrixPresent = f4matrix_toString(camera->view);
             text = TTF_RenderText_Blended_Wrapped( font, matrixPresent, color, 380 );
-            textSize = text->h * text->pitch * text->format->BytesPerPixel;
-            pixies = (GLubyte *)(text->pixels);
-            glBindTexture(GL_TEXTURE_2D, camera_textTexture);
-            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, camera_textPBO);
-            glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, textSize, pixies);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text->w, text->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            updateMatrixSamplerBuffer(camera_textPBO, camera_textTexture, text);
             free(matrixPresent);
             SDL_FreeSurface(text);
 
