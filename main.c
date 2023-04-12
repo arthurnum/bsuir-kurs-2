@@ -264,6 +264,7 @@ void updateMatrixSamplerBuffer(unsigned int buffer, unsigned int texture, SDL_Su
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
     glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, textSize, pixies);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, text->pitch / text->format->BytesPerPixel);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text->w, text->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 }
 
@@ -291,12 +292,14 @@ int main (int argc, char** argv)
         return -1;
     }
 
+    ControlState state = { 0, 0, 0, 0 };
     f4matrix projection = f4matrix_perspectiveProjection(1024.0, 768.0, 55.0, 0.1, 100.0);
     Camera* camera = newCamera();
     Cube* cube = newCube();
     MeshPlane* plane = newMeshPlane();
-    TextBlock* textBlock = newTextBlock(5.0, 12.0);
-    TextBlock* cameraTextBlock = newTextBlock(-10.0, -3.0);
+    TextBlock* textBlock = newTextBlock(5.0, 12.0, 4.0, 8.0);
+    TextBlock* cameraTextBlock = newTextBlock(-10.0, -3.0, 4.0, 8.0);
+    TextBlock* modeTextBlock = newTextBlock(-2.0, 3.0, 7.0, 8.0);
 
     // OpenGL attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -449,6 +452,49 @@ int main (int argc, char** argv)
     free(matrixPresent);
     SDL_FreeSurface(text);
 
+    // Mode text block draw init
+    unsigned int mode_tbVAO;
+    glGenVertexArrays(1, &mode_tbVAO);
+    glBindVertexArray(mode_tbVAO);
+
+    unsigned int mode_tbVBO;
+    glGenBuffers(1, &mode_tbVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, mode_tbVBO);
+    glBufferData(GL_ARRAY_BUFFER, modeTextBlock->v_size, modeTextBlock->vertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+
+    unsigned int mode_tbVBO_uva;
+    glGenBuffers(1, &mode_tbVBO_uva);
+    glBindBuffer(GL_ARRAY_BUFFER, mode_tbVBO_uva);
+    glBufferData(GL_ARRAY_BUFFER, modeTextBlock->uva_size, modeTextBlock->uva, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+
+    unsigned int mode_tbEBO;
+    glGenBuffers(1, &mode_tbEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mode_tbEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, modeTextBlock->i_size, modeTextBlock->indices, GL_STATIC_DRAW);
+
+    unsigned int mode_textTexture;
+    glGenTextures(1, &mode_textTexture);
+    glBindTexture(GL_TEXTURE_2D, mode_textTexture);
+
+    matrixPresent = modeToString(state);
+    text = TTF_RenderText_Blended_Wrapped( font, matrixPresent, color, 380 );
+    textSize = text->h * text->pitch * text->format->BytesPerPixel;
+    pixies = (GLubyte *)(text->pixels);
+    unsigned int mode_textPBO;
+    glGenBuffers(1, &mode_textPBO);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mode_textPBO);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, textSize, pixies, GL_STATIC_DRAW);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, text->pitch / text->format->BytesPerPixel);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text->w, text->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    free(matrixPresent);
+    SDL_FreeSurface(text);
+
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -458,7 +504,7 @@ int main (int argc, char** argv)
 
     int time = 0;
     char running = 1;
-    ControlState state = { 0, 0, 0, 0 };
+
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -518,6 +564,12 @@ int main (int argc, char** argv)
             free(matrixPresent);
             SDL_FreeSurface(text);
 
+            matrixPresent = modeToString(state);
+            text = TTF_RenderText_Blended_Wrapped( font, matrixPresent, color, 380 );
+            updateMatrixSamplerBuffer(mode_textPBO, mode_textTexture, text);
+            free(matrixPresent);
+            SDL_FreeSurface(text);
+
             time = 1;
         }
 
@@ -552,6 +604,13 @@ int main (int argc, char** argv)
         uniformMatrix(textBlockShaderProgram, "view", camera->view);
         uniformSampler2D(textBlockShaderProgram, "texture1", 0);
         glDrawElements(GL_TRIANGLES, cameraTextBlock->i_count, GL_UNSIGNED_INT, 0);
+
+        glBindTexture(GL_TEXTURE_2D, mode_textTexture);
+        glBindVertexArray(mode_tbVAO);
+        uniformMatrix(textBlockShaderProgram, "projection", projection);
+        uniformMatrix(textBlockShaderProgram, "view", camera->view);
+        uniformSampler2D(textBlockShaderProgram, "texture1", 0);
+        glDrawElements(GL_TRIANGLES, modeTextBlock->i_count, GL_UNSIGNED_INT, 0);
 
 
         SDL_GL_SwapWindow(window);

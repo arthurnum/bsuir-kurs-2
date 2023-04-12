@@ -15,3 +15,5 @@ typedef struct ControlState {
     char translateMode;
     char objectMode;
 } ControlState;
+
+char* modeToString(ControlState state);
