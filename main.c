@@ -4,6 +4,7 @@
 #include <OpenGL/gl3.h>
 #include "stdlib.h"
 
+#include "camera.h"
 #include "cube.h"
 #include "control.h"
 #include "matrix.h"
@@ -19,15 +20,12 @@ void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
                     switch (state.rotateMode % 3) {
                         case ROTATE_MODE_X:
                             cube->angle_z -= 0.5;
-                            updateCubeModel(cube);
                             break;
                         case ROTATE_MODE_Y:
                             cube->angle_z -= 0.5;
-                            updateCubeModel(cube);
                             break;
                         case ROTATE_MODE_Z:
                             cube->angle_y += 0.5;
-                            updateCubeModel(cube);
                             break;
                         default:
                             break;
@@ -35,7 +33,6 @@ void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
                     break;
                 case MODE_TRANSLATE:
                     cube->pos_x += 0.01;
-                    updateCubeModel(cube);
                     break;
                 default:
                     break;
@@ -48,15 +45,12 @@ void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
                     switch (state.rotateMode % 3) {
                         case ROTATE_MODE_X:
                             cube->angle_z += 0.5;
-                            updateCubeModel(cube);
                             break;
                         case ROTATE_MODE_Y:
                             cube->angle_z += 0.5;
-                            updateCubeModel(cube);
                             break;
                         case ROTATE_MODE_Z:
                             cube->angle_y -= 0.5;
-                            updateCubeModel(cube);
                             break;
                         default:
                             break;
@@ -64,7 +58,6 @@ void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
                     break;
                 case MODE_TRANSLATE:
                     cube->pos_x -= 0.01;
-                    updateCubeModel(cube);
                     break;
                 default:
                     break;
@@ -77,15 +70,12 @@ void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
                     switch (state.rotateMode % 3) {
                         case ROTATE_MODE_X:
                             cube->angle_y += 0.5;
-                            updateCubeModel(cube);
                             break;
                         case ROTATE_MODE_Y:
                             cube->angle_x += 0.5;
-                            updateCubeModel(cube);
                             break;
                         case ROTATE_MODE_Z:
                             cube->angle_x += 0.5;
-                            updateCubeModel(cube);
                             break;
                         default:
                             break;
@@ -95,17 +85,14 @@ void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
                     cube->scale_x += 0.01;
                     cube->scale_y += 0.01;
                     cube->scale_z += 0.01;
-                    updateCubeModel(cube);
                     break;
                 case MODE_TRANSLATE:
                     switch (state.translateMode % 2) {
                         case TRANSLATE_MODE_Y:
                             cube->pos_y += 0.01;
-                            updateCubeModel(cube);
                             break;
                         case TRANSLATE_MODE_Z:
                             cube->pos_z += 0.01;
-                            updateCubeModel(cube);
                             break;
                         default:
                             break;
@@ -122,15 +109,12 @@ void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
                     switch (state.rotateMode % 3) {
                         case ROTATE_MODE_X:
                             cube->angle_y -= 0.5;
-                            updateCubeModel(cube);
                             break;
                         case ROTATE_MODE_Y:
                             cube->angle_x -= 0.5;
-                            updateCubeModel(cube);
                             break;
                         case ROTATE_MODE_Z:
                             cube->angle_x -= 0.5;
-                            updateCubeModel(cube);
                             break;
                         default:
                             break;
@@ -140,17 +124,14 @@ void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
                     cube->scale_x -= 0.01;
                     cube->scale_y -= 0.01;
                     cube->scale_z -= 0.01;
-                    updateCubeModel(cube);
                     break;
                 case MODE_TRANSLATE:
                     switch (state.translateMode % 2) {
                         case TRANSLATE_MODE_Y:
                             cube->pos_y -= 0.01;
-                            updateCubeModel(cube);
                             break;
                         case TRANSLATE_MODE_Z:
                             cube->pos_z -= 0.01;
-                            updateCubeModel(cube);
                             break;
                         default:
                             break;
@@ -163,6 +144,118 @@ void processStateAgainstCube(ControlState state, SDL_Keycode key, Cube* cube) {
         default:
             break;
     }
+    updateCubeModel(cube);
+}
+
+void processStateAgainstCamera(ControlState state, SDL_Keycode key, Camera* camera) {
+    switch (key) {
+        case SDLK_RIGHT:
+            switch (state.mode) {
+                case MODE_ROTATE:
+                    switch (state.rotateMode % 3) {
+                        case ROTATE_MODE_X:
+                            camera->angle_z += 0.5;
+                            break;
+                        case ROTATE_MODE_Y:
+                            camera->angle_z += 0.5;
+                            break;
+                        case ROTATE_MODE_Z:
+                            camera->angle_y += 0.5;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case MODE_TRANSLATE:
+                    camera->pos_x -= 0.1;
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        case SDLK_LEFT:
+            switch (state.mode) {
+                case MODE_ROTATE:
+                    switch (state.rotateMode % 3) {
+                        case ROTATE_MODE_X:
+                            camera->angle_z -= 0.5;
+                            break;
+                        case ROTATE_MODE_Y:
+                            camera->angle_z -= 0.5;
+                            break;
+                        case ROTATE_MODE_Z:
+                            camera->angle_y -= 0.5;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case MODE_TRANSLATE:
+                    camera->pos_x += 0.1;
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        case SDLK_UP:
+            switch (state.mode) {
+                case MODE_ROTATE:
+                    camera->angle_x += 0.5;
+                    break;
+                case MODE_SCALE:
+                    camera->scale_x += 0.01;
+                    camera->scale_y += 0.01;
+                    camera->scale_z += 0.01;
+                    break;
+                case MODE_TRANSLATE:
+                    switch (state.translateMode % 2) {
+                        case TRANSLATE_MODE_Y:
+                            camera->pos_y -= 0.1;
+                            break;
+                        case TRANSLATE_MODE_Z:
+                            camera->pos_z -= 0.1;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        case SDLK_DOWN:
+            switch (state.mode) {
+                case MODE_ROTATE:
+                    camera->angle_x -= 0.5;
+                    break;
+                case MODE_SCALE:
+                    camera->scale_x -= 0.01;
+                    camera->scale_y -= 0.01;
+                    camera->scale_z -= 0.01;
+                    break;
+                case MODE_TRANSLATE:
+                    switch (state.translateMode % 2) {
+                        case TRANSLATE_MODE_Y:
+                            camera->pos_y += 0.1;
+                            break;
+                        case TRANSLATE_MODE_Z:
+                            camera->pos_z += 0.1;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+    updateCameraView(camera);
 }
 
 int main (int argc, char** argv)
@@ -190,7 +283,7 @@ int main (int argc, char** argv)
     }
 
     f4matrix projection = f4matrix_perspectiveProjection(1024.0, 768.0, 55.0, 0.1, 100.0);
-    f4matrix camera = f4matrix_camera();
+    Camera* camera = newCamera();
     Cube* cube = newCube();
     MeshPlane* plane = newMeshPlane();
     TextBlock* textBlock = newTextBlock();
@@ -312,7 +405,7 @@ int main (int argc, char** argv)
 
     int time = 0;
     char running = 1;
-    ControlState state = { 0, 0, 0 };
+    ControlState state = { 0, 0, 0, 0 };
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -336,10 +429,18 @@ int main (int argc, char** argv)
                     case SDLK_LEFT:
                     case SDLK_UP:
                     case SDLK_DOWN:
-                        processStateAgainstCube(state, event.key.keysym.sym, cube);
+                        if (state.objectMode % 2 == 0) {
+                            processStateAgainstCube(state, event.key.keysym.sym, cube);
+                        } else {
+                            processStateAgainstCamera(state, event.key.keysym.sym, camera);
+                        }
+                        break;
+                    case SDLK_o:
+                        state.objectMode++;
                         break;
                     case SDLK_i:
                         resetCubeModel(cube);
+                        resetCameraView(camera);
                         break;
                     // Other input here
                     default:
@@ -371,14 +472,14 @@ int main (int argc, char** argv)
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
         uniformMatrix(shaderProgram, "projection", projection);
-        uniformMatrix(shaderProgram, "view", camera);
+        uniformMatrix(shaderProgram, "view", camera->view);
         uniformMatrix(shaderProgram, "model", cube->model);
         glDrawElements(GL_TRIANGLES, cube->i_count, GL_UNSIGNED_INT, 0);
 
         glUseProgram(planeShaderProgram);
         glBindVertexArray(planeVAO);
         uniformMatrix(planeShaderProgram, "projection", projection);
-        uniformMatrix(planeShaderProgram, "view", camera);
+        uniformMatrix(planeShaderProgram, "view", camera->view);
         glDrawElements(GL_LINES, plane->i_count, GL_UNSIGNED_INT, 0);
 
         glUseProgram(textBlockShaderProgram);
@@ -386,7 +487,7 @@ int main (int argc, char** argv)
         glBindTexture(GL_TEXTURE_2D, textTexture);
         glBindVertexArray(tbVAO);
         uniformMatrix(textBlockShaderProgram, "projection", projection);
-        uniformMatrix(textBlockShaderProgram, "view", camera);
+        uniformMatrix(textBlockShaderProgram, "view", camera->view);
         uniformSampler2D(textBlockShaderProgram, "texture1", 0);
         glDrawElements(GL_TRIANGLES, textBlock->i_count, GL_UNSIGNED_INT, 0);
 

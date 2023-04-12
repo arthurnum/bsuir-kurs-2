@@ -13,4 +13,5 @@ typedef struct ControlState {
     char mode;
     char rotateMode;
     char translateMode;
+    char objectMode;
 } ControlState;
