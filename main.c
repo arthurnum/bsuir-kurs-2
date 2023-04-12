@@ -9,6 +9,7 @@
 #include "cube.h"
 #include "matrix.h"
 #include "mesh_plane.h"
+#include "shaders.h"
 #include "text_block.h"
 
 int main (int argc, char** argv)
@@ -67,8 +68,6 @@ int main (int argc, char** argv)
     GLubyte *pixies = (GLubyte *)(text->pixels);
 
 
-
-
     // OpenGL attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -80,147 +79,18 @@ int main (int argc, char** argv)
     // Create OpenGL context
     SDL_GLContext Context = SDL_GL_CreateContext(window);
 
-    const char *vertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;\n"
-        "layout (location = 1) in vec3 aNormal;\n"
-        "uniform mat4 projection;\n"
-        "uniform mat4 view;\n"
-        "uniform mat4 model;\n"
-        "out vec4 normal;\n"
-        "void main()\n"
-        "{\n"
-        "   normal = model * vec4(aNormal, 1.0);\n"
-        "   gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
-        "}\n\0";
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
+    Shader vertexShader = loadVertexShader("GLSL/cube.vert");
+    Shader fragmentShader = loadFragmentShader("GLSL/cube.frag");
 
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n %s\n", infoLog);
-    };
+    Shader planeVertexShader = loadVertexShader("GLSL/plane.vert");
+    Shader planeFragmentShader = loadFragmentShader("GLSL/plane.frag");
 
-    const char *fragmentShaderSource = "#version 330 core\n"
-        "in vec4 normal;\n"
-        "out vec4 FragColor;\n"
-        "void main()\n"
-        "{\n"
-        "   float cosTheta = clamp( dot( normal, normalize(vec4(-5.0, 10.0, -10.0, 1.0)) ), 0.5, 1.0);\n"
-        "   vec3 result = vec3(0.8, 0.8, 0.8) * cosTheta;\n"
-        "   FragColor = vec4(result, 1.0);\n"
-        "}\n\0";
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
+    Shader textBlockVertexShader = loadVertexShader("GLSL/text.vert");
+    Shader textBlockFragmentShader = loadFragmentShader("GLSL/text.frag");
 
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n %s\n", infoLog);
-    };
-
-    const char *planeVertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;\n"
-        "uniform mat4 projection;\n"
-        "uniform mat4 view;\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = projection * view * mat4(1.0) * vec4(aPos, 1.0);\n"
-        "}\n\0";
-    unsigned int planeVertexShader;
-    planeVertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(planeVertexShader, 1, &planeVertexShaderSource, NULL);
-    glCompileShader(planeVertexShader);
-
-    glGetShaderiv(planeVertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(planeVertexShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n %s\n", infoLog);
-    };
-
-    const char *planeFragmentShaderSource = "#version 330 core\n"
-        "out vec4 FragColor;\n"
-        "void main()\n"
-        "{\n"
-        "   FragColor = vec4(0.75, 0.75, 1.0, 1.0);\n"
-        "}\n\0";
-    unsigned int planeFragmentShader;
-    planeFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(planeFragmentShader, 1, &planeFragmentShaderSource, NULL);
-    glCompileShader(planeFragmentShader);
-
-    glGetShaderiv(planeFragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(planeFragmentShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n %s\n", infoLog);
-    };
-
-    // Text BLOCK -----------------
-    const char *textBlockVertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;\n"
-        "layout (location = 1) in vec2 uva;\n"
-        "uniform mat4 projection;\n"
-        "uniform mat4 view;\n"
-        "out vec2 uvaPos;\n"
-        "void main()\n"
-        "{\n"
-        "   uvaPos = uva;"
-        "   gl_Position = projection * vec4(aPos, 1.0);\n"
-        "}\n\0";
-    unsigned int textBlockVertexShader;
-    textBlockVertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(textBlockVertexShader, 1, &textBlockVertexShaderSource, NULL);
-    glCompileShader(textBlockVertexShader);
-
-    glGetShaderiv(textBlockVertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(textBlockVertexShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n %s\n", infoLog);
-    };
-
-    const char *textBlockFragmentShaderSource = "#version 330 core\n"
-        "uniform sampler2D texture1;\n"
-        "in vec2 uvaPos;\n"
-        "out vec4 FragColor;\n"
-        "void main()\n"
-        "{\n"
-        "   FragColor = texture(texture1, uvaPos);\n"
-        "}\n\0";
-    unsigned int textBlockFragmentShader;
-    textBlockFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(textBlockFragmentShader, 1, &textBlockFragmentShaderSource, NULL);
-    glCompileShader(textBlockFragmentShader);
-
-    glGetShaderiv(textBlockFragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(textBlockFragmentShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n %s\n", infoLog);
-    };
-    // ----------------------------
-
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    unsigned int planeShaderProgram;
-    planeShaderProgram = glCreateProgram();
-    glAttachShader(planeShaderProgram, planeVertexShader);
-    glAttachShader(planeShaderProgram, planeFragmentShader);
-    glLinkProgram(planeShaderProgram);
-
-    unsigned int textBlockShaderProgram;
-    textBlockShaderProgram = glCreateProgram();
-    glAttachShader(textBlockShaderProgram, textBlockVertexShader);
-    glAttachShader(textBlockShaderProgram, textBlockFragmentShader);
-    glLinkProgram(textBlockShaderProgram);
+    ShaderProgram shaderProgram = buildShaderProgram(vertexShader, fragmentShader);
+    ShaderProgram planeShaderProgram = buildShaderProgram(planeVertexShader, planeFragmentShader);
+    ShaderProgram textBlockShaderProgram = buildShaderProgram(textBlockVertexShader, textBlockFragmentShader);
 
     Cube* cube = newCube();
 
@@ -342,52 +212,33 @@ int main (int argc, char** argv)
         cube->angle_z += 0.005;
 
 
-
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // OpenGL rendering goes here
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-
-        int modelLoc = glGetUniformLocation(shaderProgram, "projection");
-        glUniformMatrix4fv(modelLoc, 1, GL_TRUE, projection);
-        int modelLoc2 = glGetUniformLocation(shaderProgram, "view");
-        glUniformMatrix4fv(modelLoc2, 1, GL_TRUE, camera);
-        int modelLoc3 = glGetUniformLocation(shaderProgram, "model");
-        glUniformMatrix4fv(modelLoc3, 1, GL_TRUE, cube->model);
-
+        uniformMatrix(shaderProgram, "projection", projection);
+        uniformMatrix(shaderProgram, "view", camera);
+        uniformMatrix(shaderProgram, "model", cube->model);
         glDrawElements(GL_TRIANGLES, cube->i_count, GL_UNSIGNED_INT, 0);
 
         glUseProgram(planeShaderProgram);
         glBindVertexArray(planeVAO);
-
-        modelLoc = glGetUniformLocation(planeShaderProgram, "projection");
-        glUniformMatrix4fv(modelLoc, 1, GL_TRUE, projection);
-        modelLoc2 = glGetUniformLocation(planeShaderProgram, "view");
-        glUniformMatrix4fv(modelLoc2, 1, GL_TRUE, camera);
-
+        uniformMatrix(planeShaderProgram, "projection", projection);
+        uniformMatrix(planeShaderProgram, "view", camera);
         glDrawElements(GL_LINES, plane->i_count, GL_UNSIGNED_INT, 0);
 
-
-
         glUseProgram(textBlockShaderProgram);
-
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textTexture);
-
         glBindVertexArray(tbVAO);
-
-        modelLoc = glGetUniformLocation(textBlockShaderProgram, "projection");
-        glUniformMatrix4fv(modelLoc, 1, GL_TRUE, projection);
-        modelLoc2 = glGetUniformLocation(textBlockShaderProgram, "view");
-        glUniformMatrix4fv(modelLoc2, 1, GL_TRUE, camera);
-        int modelLoc4 = glGetUniformLocation(textBlockShaderProgram, "texture1");
-        glUniform1i(modelLoc4, 0);
-
-
+        uniformMatrix(textBlockShaderProgram, "projection", projection);
+        uniformMatrix(textBlockShaderProgram, "view", camera);
+        uniformSampler2D(textBlockShaderProgram, "texture1", 0);
         glDrawElements(GL_TRIANGLES, textBlock->i_count, GL_UNSIGNED_INT, 0);
 
          if (time % 100 == 0) {
+            matrixPresent = malloc(512);
+
             sprintf(
                 matrixPresent,
                 "%5.2f %5.2f %5.2f %5.2f\n"
@@ -416,8 +267,9 @@ int main (int argc, char** argv)
             pixies = (GLubyte *)(text->pixels);
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, textPBO);
             glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, textSize, pixies);
-            // glPixelStorei(GL_UNPACK_ROW_LENGTH, text->pitch / text->format->BytesPerPixel);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text->w, text->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            free(matrixPresent);
+            SDL_FreeSurface(text);
             // cube->pos_x += 0.001;
             // cube->pos_y += 0.0005;
             // cube->scale_x += 0.0004;
