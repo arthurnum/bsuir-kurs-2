@@ -110,10 +110,7 @@ Cube* newCube() {
     cube->indices = malloc(cube->i_size);
     memcpy(cube->indices, indices, cube->i_size);
 
-    cube->model = f4matrix_identity();
-    cube->scale_x = 1.0;
-    cube->scale_y = 1.0;
-    cube->scale_z = 1.0;
+    resetCubeModel(cube);
 
     return cube;
 }
@@ -140,4 +137,17 @@ void updateCubeModel(Cube* cube) {
         );
 
     free(old_model);
+}
+
+void resetCubeModel(Cube* cube) {
+    cube->model = f4matrix_identity();
+    cube->pos_x = 0.0;
+    cube->pos_y = 0.0;
+    cube->pos_z = 0.0;
+    cube->angle_x = 0.0;
+    cube->angle_y = 0.0;
+    cube->angle_z = 0.0;
+    cube->scale_x = 1.0;
+    cube->scale_y = 1.0;
+    cube->scale_z = 1.0;
 }

@@ -1,11 +1,18 @@
 #version 330 core
 
-in vec4 normal;
+uniform mat4 model;
+
+in vec3 normal;
 out vec4 FragColor;
 
 void main()
 {
-   float cosTheta = clamp( dot( normal, normalize(vec4(-5.0, 15.0, -10.0, 1.0)) ), 0.5, 1.0);
-   vec3 result = vec3(0.8, 0.8, 0.8) * cosTheta;
+   vec3 light = normalize( vec3(sin(0.25), cos(0.5), -cos(0.25)) );
+   float cosTheta = clamp(
+      dot( normal, light ),
+      0.5,
+      1.0
+   );
+   vec3 result = vec3(1.0, 0.85, 0.85) * cosTheta;
    FragColor = vec4(result, 1.0);
 }

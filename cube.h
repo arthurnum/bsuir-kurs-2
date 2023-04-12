@@ -27,3 +27,4 @@ typedef struct Cube {
 
 Cube* newCube();
 void updateCubeModel(Cube* cube);
+void resetCubeModel(Cube* cube);
