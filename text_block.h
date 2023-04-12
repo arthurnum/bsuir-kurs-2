@@ -10,4 +10,4 @@ typedef struct TextBlock {
     int i_count;
 } TextBlock;
 
-TextBlock* newTextBlock();
+TextBlock* newTextBlock(float xl, float xr);

@@ -2,14 +2,14 @@
 #include "string.h"
 #include "text_block.h"
 
-TextBlock* newTextBlock() {
+TextBlock* newTextBlock(float xl, float xr) {
     TextBlock* block = malloc(sizeof(TextBlock));
 
     float vertices[] = {
-        5.0, 4.0, -15.0,
-        5.0, 8.0, -15.0,
-        12.0, 4.0, -15.0,
-        12.0, 8.0, -15.0,
+        xl, 4.0, -15.0,
+        xl, 8.0, -15.0,
+        xr, 4.0, -15.0,
+        xr, 8.0, -15.0,
     };
 
     float uva[] = {
